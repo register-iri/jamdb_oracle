@@ -46,22 +46,16 @@ init(Opts) ->
 
 %% Error types: socket, remote, local
 handle_call({sql_query, Query, Tout}, _From, State) ->
-    try jamdb_oracle_conn:sql_query(State, Query, Tout) of
+    case jamdb_oracle_conn:sql_query(State, Query, Tout) of
         {ok, Result, State2} ->
             {reply, {ok, Result}, State2};
         {error, Type, Reason, State2} ->
             {reply, {error, Type, Reason}, State2}
-    catch
-        error:_Reason ->
-            {stop, normal, State}
     end;
 handle_call(stop, _From, State) ->
-    try jamdb_oracle_conn:disconnect(State, 1) of
+    case jamdb_oracle_conn:disconnect(State, 1) of
         {ok, _Result} ->
             {stop, normal, ok, State}
-    catch
-        error:_Reason ->
-            {stop, normal, State}
     end;
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
